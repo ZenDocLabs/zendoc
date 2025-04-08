@@ -1,0 +1,36 @@
+# Go binary files
+*.exe
+*.exe~
+*.out
+*.test
+*.so
+*.dylib
+
+# Dependency directories
+/vendor/
+
+# Go workspace file
+go.work
+
+# Go module file
+go.mod
+go.sum
+
+# IDE and editor files
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+
+# Test coverage files
+coverage.out
+
+# Other build artifacts
+bin/
