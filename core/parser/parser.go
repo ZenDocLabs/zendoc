@@ -6,6 +6,7 @@ import (
 	"go/parser"
 	"go/token"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -15,7 +16,10 @@ import (
 
 const GO_EXTENSION = ".go"
 
+type DocParserFileValidator = func(string) bool
+
 type DocParser struct {
+	FileValidators []DocParserFileValidator
 }
 
 func (docParser DocParser) ParseDocForDir(dirPath string) (*doc.ProjectDoc, error) {
@@ -76,7 +80,7 @@ func (docParser DocParser) ParseDocForFile(filePath string) (string, *doc.FileDo
 	fset := token.NewFileSet()
 	node, err := parser.ParseFile(fset, filePath, nil, parser.ParseComments)
 
-	var docs []doc.FuncDoc
+	docs := []doc.FuncDoc{}
 
 	if err != nil {
 		panic(err)
@@ -96,7 +100,8 @@ func (docParser DocParser) ParseDocForFile(filePath string) (string, *doc.FileDo
 	}
 
 	return packageName, &doc.FileDoc{
-		Docs: docs,
+		Docs:     docs,
+		FileName: path.Base(filePath),
 	}
 }
 

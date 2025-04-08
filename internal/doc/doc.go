@@ -27,7 +27,7 @@ type FuncDoc struct {
 }
 
 type FileDoc struct {
-	FileName string    `json:"file_name"`
+	FileName string    `json:"filename"`
 	Docs     []FuncDoc `json:"docs"`
 }
 

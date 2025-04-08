@@ -36,3 +36,4 @@ coverage.out
 bin/
 doc.json
 coverage.html
+.zendoc.config.json

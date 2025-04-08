@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/dterbah/zendoc/internal"
-	"github.com/dterbah/zendoc/internal/zendoc"
+	"github.com/dterbah/zendoc/internal/zendoc/generate"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
@@ -30,7 +30,7 @@ var generateZenDoc = &cobra.Command{
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		outputFormat := args[0]
-		err := zendoc.GenerateDoc(outputFormat)
+		err := generate.GenerateDoc(outputFormat)
 
 		if err != nil {
 			color.Red("error when generating doc %s", err)
