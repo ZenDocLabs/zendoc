@@ -34,3 +34,5 @@ coverage.out
 
 # Other build artifacts
 bin/
+doc.json
+coverage.html

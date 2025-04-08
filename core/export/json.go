@@ -1,17 +1,25 @@
 package export
 
 import (
-	"encoding/json"
-	"fmt"
+	"os"
 
+	"github.com/dterbah/zendoc/core/parser/serializer"
 	"github.com/dterbah/zendoc/internal/doc"
 )
 
-func ExportToJSON(projectDoc doc.ProjectDoc) (string, error) {
-	b, err := json.Marshal(projectDoc)
+type JSONExporter struct {
+	DocExporter
+}
+
+const EXPORT_FILE = "doc.json"
+
+func (jsonExport JSONExporter) Export(projectDoc doc.ProjectDoc) error {
+	projectDocJSON, err := serializer.SerializeToJSON(projectDoc)
+
 	if err != nil {
-		return "", fmt.Errorf("error when exporting the documentation in JSON")
+		return nil
 	}
 
-	return string(b), nil
+	err = os.WriteFile(EXPORT_FILE, []byte(projectDocJSON), 0644)
+	return err
 }

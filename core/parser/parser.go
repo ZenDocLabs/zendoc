@@ -15,7 +15,10 @@ import (
 
 const GO_EXTENSION = ".go"
 
-func ParseDocForDir(dirPath string) (*doc.ProjectDoc, error) {
+type DocParser struct {
+}
+
+func (docParser DocParser) ParseDocForDir(dirPath string) (*doc.ProjectDoc, error) {
 	entries, err := os.ReadDir(dirPath)
 	projectDoc := &doc.ProjectDoc{
 		PackageDocs: make(map[string][]doc.FileDoc),
@@ -28,7 +31,7 @@ func ParseDocForDir(dirPath string) (*doc.ProjectDoc, error) {
 		fullPath := filepath.Join(dirPath, entry.Name())
 		if entry.Type().IsRegular() {
 			if filepath.Ext(fullPath) == GO_EXTENSION {
-				pckName, fileDoc := ParseDocForFile(fullPath)
+				pckName, fileDoc := docParser.ParseDocForFile(fullPath)
 				_, ok := projectDoc.PackageDocs[pckName]
 				if !ok {
 					projectDoc.PackageDocs[pckName] = []doc.FileDoc{}
@@ -37,7 +40,7 @@ func ParseDocForDir(dirPath string) (*doc.ProjectDoc, error) {
 				projectDoc.PackageDocs[pckName] = append(projectDoc.PackageDocs[pckName], *fileDoc)
 			}
 		} else if entry.Type().IsDir() {
-			dirDoc, err := ParseDocForDir(fullPath)
+			dirDoc, err := docParser.ParseDocForDir(fullPath)
 			if err != nil {
 				return nil, fmt.Errorf("error when retrieving doc of the directory %s", fullPath)
 			}
@@ -63,7 +66,7 @@ func ParseDocForDir(dirPath string) (*doc.ProjectDoc, error) {
 // @author Dorian TERBAH
 // @return (string, []doc.FuncDoc) - The associated doc for the file. If no package is mentioned, it return an empty string and nil
 // @example ParseDocForFile("myfile.go")
-func ParseDocForFile(filePath string) (string, *doc.FileDoc) {
+func (docParser DocParser) ParseDocForFile(filePath string) (string, *doc.FileDoc) {
 	// retrieve package name
 	packageName, err := getPackageName(filePath)
 	if err != nil {
@@ -85,7 +88,7 @@ func ParseDocForFile(filePath string) (string, *doc.FileDoc) {
 			continue
 		}
 
-		fd := ParseDocForFunction(funcDecl)
+		fd := docParser.ParseDocForFunction(funcDecl)
 
 		if fd != nil {
 			docs = append(docs, *fd)
@@ -103,7 +106,7 @@ func ParseDocForFile(filePath string) (string, *doc.FileDoc) {
 @author Dorian TERBAH
 @return *doc.FuncDoc - Associated function documentation object
 */
-func ParseDocForFunction(function *ast.FuncDecl) *doc.FuncDoc {
+func (docParser DocParser) ParseDocForFunction(function *ast.FuncDecl) *doc.FuncDoc {
 	// Regex for tags in documentation
 	paramRegex := regexp.MustCompile(`@param\s+(\w+)\s+(.+?)\s*-\s*(.*)`)
 	returnRegex := regexp.MustCompile(`@return\s+(.+?)\s*-\s*(.*)`)
@@ -184,7 +187,9 @@ func sanitizeLines(doc *ast.CommentGroup) []string {
 
 				for _, line := range blockLines {
 					line = strings.TrimSpace(strings.TrimPrefix(line, "*"))
-					lines = append(lines, line)
+					if line != "" {
+						lines = append(lines, line)
+					}
 				}
 			}
 		}
