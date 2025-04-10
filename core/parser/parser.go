@@ -20,6 +20,11 @@ const GO_EXTENSION = ".go"
 type DocParserFileValidator = func(string) bool
 type DocParserFunctionValidator = func(string) bool
 
+/*
+@description Struct responsible for orchestrating validation logic when parsing documentation from Go source files. It holds a list of validators for files and functions to modularize and organize parsing rules and behaviors.
+@field FileValidators []DocParserFileValidator - A list of validators applied at the file level (e.g. checking file-level tags, imports, etc.)
+@field FunctionValidators []DocParserFunctionValidator - A list of validators specifically designed to validate function-level documentation (e.g. param/return tag parsing, required fields, etc.)
+*/
 type DocParser struct {
 	FileValidators     []DocParserFileValidator
 	FunctionValidators []DocParserFunctionValidator
@@ -89,7 +94,9 @@ func (docParser DocParser) ParseDocForDir(dirPath string, currentPath string) (*
 					projectDoc.PackageDocs[pckName] = []doc.FileDoc{}
 				}
 				fileDoc.Path = filepath.Join(currentPath, entry.Name())
-				projectDoc.PackageDocs[pckName] = append(projectDoc.PackageDocs[pckName], *fileDoc)
+				if len(fileDoc.Docs) > 0 {
+					projectDoc.PackageDocs[pckName] = append(projectDoc.PackageDocs[pckName], *fileDoc)
+				}
 			}
 		} else if entry.Type().IsDir() {
 			dirDoc, err := docParser.ParseDocForDir(fullPath, filepath.Join(currentPath, entry.Name()))
@@ -108,7 +115,17 @@ func (docParser DocParser) ParseDocForDir(dirPath string, currentPath string) (*
 		}
 	}
 
+	removeEmptyPackages(projectDoc)
+
 	return projectDoc, nil
+}
+
+func removeEmptyPackages(projectDoc *doc.ProjectDoc) {
+	for pckName, doc := range projectDoc.PackageDocs {
+		if len(doc) == 0 {
+			delete(projectDoc.PackageDocs, pckName)
+		}
+	}
 }
 
 // @description Parse the documentation for a single file

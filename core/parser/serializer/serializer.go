@@ -14,7 +14,6 @@ import (
 @return (string, error) - The resulting JSON string and an error if serialization fails
 @example SerializeToJSON(myDoc)
 */
-
 func SerializeToJSON(doc doc.ProjectDoc) (string, error) {
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
