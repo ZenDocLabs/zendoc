@@ -75,7 +75,7 @@ func GenerateDoc(outputFormat string) error {
 		FileValidators:     createFilevalidators(*projectConfig),
 		FunctionValidators: createFunctionsValidators(*projectConfig),
 	}
-	projectDoc, err := docParser.ParseDocForDir(cwd)
+	projectDoc, err := docParser.ParseDocForDir(cwd, "")
 	if err != nil {
 		color.Red("error when parse your project %s", err)
 		return err

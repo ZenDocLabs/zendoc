@@ -45,7 +45,7 @@ func (docParser DocParser) isValidateFunction(name string) bool {
 	return true
 }
 
-func (docParser DocParser) ParseDocForDir(dirPath string) (*doc.ProjectDoc, error) {
+func (docParser DocParser) ParseDocForDir(dirPath string, currentPath string) (*doc.ProjectDoc, error) {
 	entries, err := os.ReadDir(dirPath)
 	projectDoc := &doc.ProjectDoc{
 		PackageDocs: make(map[string][]doc.FileDoc),
@@ -71,11 +71,11 @@ func (docParser DocParser) ParseDocForDir(dirPath string) (*doc.ProjectDoc, erro
 				if !ok {
 					projectDoc.PackageDocs[pckName] = []doc.FileDoc{}
 				}
-
+				fileDoc.Path = filepath.Join(currentPath, entry.Name())
 				projectDoc.PackageDocs[pckName] = append(projectDoc.PackageDocs[pckName], *fileDoc)
 			}
 		} else if entry.Type().IsDir() {
-			dirDoc, err := docParser.ParseDocForDir(fullPath)
+			dirDoc, err := docParser.ParseDocForDir(fullPath, filepath.Join(currentPath, entry.Name()))
 			if err != nil {
 				return nil, fmt.Errorf("error when retrieving doc of the directory %s", fullPath)
 			}

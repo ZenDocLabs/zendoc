@@ -22,6 +22,7 @@ func InitZenDoc() error {
 			Name:        projectName,
 			Description: "Description of your project",
 			Version:     "1.0",
+			GitLink:     "",
 		},
 		DocConfig: config.DocConfig{
 			IncludePrivate: false,

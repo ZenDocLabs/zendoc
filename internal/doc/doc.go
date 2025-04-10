@@ -46,10 +46,11 @@ type StructDoc struct {
 
 type FileDoc struct {
 	FileName string `json:"filename"`
+	Path     string `json:"path"`
 	// should be BaseDoc objects
 	Docs []any `json:"docs"`
 }
 
 type ProjectDoc struct {
-	PackageDocs map[string][]FileDoc `json:"package_docs"`
+	PackageDocs map[string][]FileDoc `json:"packageDocs"`
 }

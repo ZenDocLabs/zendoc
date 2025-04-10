@@ -1,0 +1,14 @@
+{
+  "projectConfig": {
+    "name": "zendoc",
+    "description": "Description of your project",
+    "version": "1.0",
+    "gitLink": "https://github.com/ZenDocLabs/zendoc"
+  },
+  "docConfig": {
+    "includePrivate": false,
+    "includeTests": false,
+    "includeMain": false,
+    "excludeFiles": []
+  }
+}
