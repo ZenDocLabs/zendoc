@@ -25,6 +25,11 @@ type DocParser struct {
 	FunctionValidators []DocParserFunctionValidator
 }
 
+/*
+@description Check if a file is valid for documentation generation using the provided file validators
+@param filepath string - The file path to validate
+@return bool - true if the file is valid, false otherwise
+*/
 func (docParser DocParser) isValidateFileForDoc(filepath string) bool {
 	for _, validator := range docParser.FileValidators {
 		if !validator(filepath) {
@@ -35,6 +40,11 @@ func (docParser DocParser) isValidateFileForDoc(filepath string) bool {
 	return true
 }
 
+/*
+@description Check if a function name is valid for documentation generation using the provided function validators
+@param name string - The function name to validate
+@return bool - true if the function is valid, false otherwise
+*/
 func (docParser DocParser) isValidateFunction(name string) bool {
 	for _, validator := range docParser.FunctionValidators {
 		if !validator(name) {
@@ -45,6 +55,13 @@ func (docParser DocParser) isValidateFunction(name string) bool {
 	return true
 }
 
+/*
+@description Recursively parse documentation in a directory and its subdirectories
+@param dirPath string - The root path to scan
+@param currentPath string - The relative path used for output (maintains relative structure)
+@return *doc.ProjectDoc, error - The parsed project documentation and an error if something went wrong
+@example ParseDocForDir("./myproject", "")
+*/
 func (docParser DocParser) ParseDocForDir(dirPath string, currentPath string) (*doc.ProjectDoc, error) {
 	entries, err := os.ReadDir(dirPath)
 	projectDoc := &doc.ProjectDoc{
@@ -300,6 +317,11 @@ func (docParser DocParser) ParseDocForFunction(function *ast.FuncDecl) *doc.Func
 	return fd
 }
 
+/*
+@description Sanitize and flatten comment lines (block or single-line) to a slice of clean strings
+@param doc *ast.CommentGroup - The group of AST comments to sanitize
+@return []string - The cleaned lines
+*/
 func sanitizeLines(doc *ast.CommentGroup) []string {
 	lines := []string{}
 

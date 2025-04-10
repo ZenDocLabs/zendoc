@@ -27,6 +27,11 @@ type Config struct {
 	DocConfig     DocConfig     `json:"docConfig"`
 }
 
+/*
+@description Load the ZenDoc configuration from the configuration file
+@return (*Config, error) - A pointer to the loaded configuration and an error if loading fails
+@example GetConfiguration() => &Config{...}, nil
+*/
 func GetConfiguration() (*Config, error) {
 	config := Config{}
 
@@ -43,6 +48,13 @@ func GetConfiguration() (*Config, error) {
 
 	return &config, nil
 }
+
+/*
+@description Save the given ZenDoc configuration to the configuration file
+@param config Config - The configuration to save
+@return error - An error if the saving process fails, otherwise nil
+@example SaveConfiguration(myConfig)
+*/
 
 func SaveConfiguration(config Config) error {
 	content, err := json.MarshalIndent(config, "", "  ")

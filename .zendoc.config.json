@@ -3,7 +3,7 @@
     "name": "zendoc",
     "description": "Description of your project",
     "version": "1.0",
-    "gitLink": "https://github.com/ZenDocLabs/zendoc"
+    "gitLink": ""
   },
   "docConfig": {
     "includePrivate": false,
