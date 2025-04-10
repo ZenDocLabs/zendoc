@@ -27,7 +27,7 @@ func wrapFunctionValidator(condition bool, wrappedFunc parser.DocParserFunctionV
 	return func(name string) bool {
 		res := wrappedFunc(name)
 		if res {
-			return !condition
+			return condition
 		}
 		return true
 	}
