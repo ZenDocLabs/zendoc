@@ -15,8 +15,10 @@ type ProjectConfig struct {
 }
 
 type DocConfig struct {
-	IncludePrivate bool `json:"includePrivate"`
-	IncludeTests   bool `json:"includeTests"`
+	IncludePrivate bool     `json:"includePrivate"`
+	IncludeTests   bool     `json:"includeTests"`
+	IncludeMain    bool     `json:"includeMain"`
+	ExcludeFiles   []string `json:"excludeFiles"`
 }
 
 type Config struct {
@@ -42,7 +44,7 @@ func GetConfiguration() (*Config, error) {
 }
 
 func SaveConfiguration(config Config) error {
-	content, err := json.Marshal(config)
+	content, err := json.MarshalIndent(config, "", "  ")
 	if err != nil {
 		return err
 	}

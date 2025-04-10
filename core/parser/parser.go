@@ -12,14 +12,37 @@ import (
 	"strings"
 
 	"github.com/dterbah/zendoc/internal/doc"
+	"github.com/fatih/color"
 )
 
 const GO_EXTENSION = ".go"
 
 type DocParserFileValidator = func(string) bool
+type DocParserFunctionValidator = func(string) bool
 
 type DocParser struct {
-	FileValidators []DocParserFileValidator
+	FileValidators     []DocParserFileValidator
+	FunctionValidators []DocParserFunctionValidator
+}
+
+func (docParser DocParser) isValidateFileForDoc(filepath string) bool {
+	for _, validator := range docParser.FileValidators {
+		if !validator(filepath) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func (docParser DocParser) isValidateFunction(name string) bool {
+	for _, validator := range docParser.FunctionValidators {
+		if !validator(name) {
+			return false
+		}
+	}
+
+	return true
 }
 
 func (docParser DocParser) ParseDocForDir(dirPath string) (*doc.ProjectDoc, error) {
@@ -34,7 +57,15 @@ func (docParser DocParser) ParseDocForDir(dirPath string) (*doc.ProjectDoc, erro
 	for _, entry := range entries {
 		fullPath := filepath.Join(dirPath, entry.Name())
 		if entry.Type().IsRegular() {
+			fileName := entry.Name()
 			if filepath.Ext(fullPath) == GO_EXTENSION {
+				if !docParser.isValidateFileForDoc(fileName) {
+					color.HiYellow("File \"%s\" skipped", fileName)
+					continue
+				}
+
+				color.Green("File \"%s\" being processed...", path.Base(fileName))
+
 				pckName, fileDoc := docParser.ParseDocForFile(fullPath)
 				_, ok := projectDoc.PackageDocs[pckName]
 				if !ok {
@@ -80,39 +111,124 @@ func (docParser DocParser) ParseDocForFile(filePath string) (string, *doc.FileDo
 	fset := token.NewFileSet()
 	node, err := parser.ParseFile(fset, filePath, nil, parser.ParseComments)
 
-	docs := []doc.FuncDoc{}
+	docs := []any{}
 
 	if err != nil {
 		panic(err)
 	}
 
 	for _, decl := range node.Decls {
-		funcDecl, ok := decl.(*ast.FuncDecl)
-		if !ok {
+		funcDecl, isFunction := decl.(*ast.FuncDecl)
+		if isFunction {
+			if !docParser.isValidateFunction(funcDecl.Name.Name) {
+				color.HiYellow("	Skip function \"%s\"", funcDecl.Name.Name)
+				continue
+			}
+
+			fd := docParser.ParseDocForFunction(funcDecl)
+			if fd != nil {
+				docs = append(docs, *fd)
+			}
+
 			continue
 		}
 
-		fd := docParser.ParseDocForFunction(funcDecl)
+		genDecl, ok := decl.(*ast.GenDecl)
+		if ok && genDecl.Tok == token.TYPE {
+			for _, spec := range genDecl.Specs {
+				typeSpec, ok := spec.(*ast.TypeSpec)
+				if !ok {
+					continue
+				}
 
-		if fd != nil {
-			docs = append(docs, *fd)
+				_, ok = typeSpec.Type.(*ast.StructType)
+				if ok {
+					if genDecl.Doc != nil {
+						sd := docParser.ParseDocForStruct(genDecl.Doc, typeSpec.Name.Name)
+						if sd != nil {
+							docs = append(docs, *sd)
+						}
+					}
+				}
+			}
 		}
+
 	}
 
 	return packageName, &doc.FileDoc{
 		Docs:     docs,
-		FileName: path.Base(filePath),
+		FileName: filepath.Base(filePath),
 	}
+}
+
+/*
+@description Parse documentation for a struct
+@param function *ast.CommentGroup - The comments line associated to the struct
+@param name string - Name of the struct
+@author Dorian TERBAH
+@return *doc.StructDoc - Associated function documentation object, or nil if there is no comments with tags
+*/
+func (docParser DocParser) ParseDocForStruct(structComments *ast.CommentGroup, name string) *doc.StructDoc {
+	descriptionRegex := regexp.MustCompile(`@description\s*(.*)`)
+	authorRegex := regexp.MustCompile(`@author\s*(.*)`)
+	deprecatedRegex := regexp.MustCompile(`@deprecated\s*(.*)`)
+	fieldRegex := regexp.MustCompile(`@field\s+(\w+)\s+(.+?)\s*-\s*(.*)`)
+
+	lines := sanitizeLines(structComments)
+	if len(lines) == 0 {
+		return nil
+	}
+
+	sd := &doc.StructDoc{
+		Fields: []doc.StructField{},
+	}
+
+	sd.Name = name
+	sd.Type = "struct"
+
+	for _, line := range lines {
+		switch {
+		case strings.HasPrefix(line, "@description"):
+			if matches := descriptionRegex.FindStringSubmatch(line); len(matches) == 2 {
+				sd.Description = matches[1]
+			}
+
+		case strings.HasPrefix(line, "@author"):
+			if matches := authorRegex.FindStringSubmatch(line); len(matches) == 2 {
+				sd.Author = matches[1]
+			}
+
+		case strings.HasPrefix(line, "@deprecated"):
+			if matches := deprecatedRegex.FindStringSubmatch(line); len(matches) == 2 {
+				sd.Deprecated = matches[1]
+			}
+
+		case strings.HasPrefix(line, "@field"):
+			if matches := fieldRegex.FindStringSubmatch(line); len(matches) == 4 {
+				sd.Fields = append(sd.Fields, doc.StructField{
+					Name:        matches[1],
+					Type:        matches[2],
+					Description: matches[3],
+				})
+			}
+		}
+	}
+
+	// if no documentation is available
+	if sd.Description == "" && sd.Author == "" && sd.Deprecated == "" && len(sd.Fields) == 0 {
+		return nil
+	}
+
+	return sd
 }
 
 /*
 @description Parse documentation for a single function
 @param function *ast.FuncDecl - The function to parse
 @author Dorian TERBAH
-@return *doc.FuncDoc - Associated function documentation object
+@return *doc.FuncDoc - Associated function documentation object, or nil if there is not tagged comments
 */
 func (docParser DocParser) ParseDocForFunction(function *ast.FuncDecl) *doc.FuncDoc {
-	// Regex for tags in documentation
 	paramRegex := regexp.MustCompile(`@param\s+(\w+)\s+(.+?)\s*-\s*(.*)`)
 	returnRegex := regexp.MustCompile(`@return\s+(.+?)\s*-\s*(.*)`)
 	exampleRegex := regexp.MustCompile(`@example\s*(.*)`)
@@ -121,13 +237,27 @@ func (docParser DocParser) ParseDocForFunction(function *ast.FuncDecl) *doc.Func
 	deprecatedRegex := regexp.MustCompile(`@deprecated\s*(.*)`)
 
 	fd := &doc.FuncDoc{
-		Name:   function.Name.Name,
 		Params: []doc.Param{},
+	}
+
+	fd.Name = function.Name.Name
+	fd.Type = "function"
+
+	// Check if it's a method associated with a struct
+	if function.Recv != nil && len(function.Recv.List) > 0 {
+		// The type can be *ast.Ident (e.g., T) or *ast.StarExpr (e.g., *T)
+		switch expr := function.Recv.List[0].Type.(type) {
+		case *ast.Ident:
+			fd.Struct = expr.Name
+		case *ast.StarExpr:
+			if ident, ok := expr.X.(*ast.Ident); ok {
+				fd.Struct = ident.Name
+			}
+		}
 	}
 
 	lines := sanitizeLines(function.Doc)
 	if len(lines) == 0 {
-		// no documentation available for this function, skip it
 		return nil
 	}
 
@@ -164,8 +294,6 @@ func (docParser DocParser) ParseDocForFunction(function *ast.FuncDecl) *doc.Func
 			if matches := deprecatedRegex.FindStringSubmatch(line); len(matches) == 2 {
 				fd.Deprecated = matches[1]
 			}
-
-		default:
 		}
 	}
 

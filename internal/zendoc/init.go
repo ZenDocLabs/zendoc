@@ -3,7 +3,7 @@ package zendoc
 import (
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 
 	"github.com/dterbah/zendoc/config"
 )
@@ -15,7 +15,7 @@ func InitZenDoc() error {
 		return err
 	}
 
-	projectName := path.Base(cwd)
+	projectName := filepath.Base(cwd)
 
 	defaultConfiguration := config.Config{
 		ProjectConfig: config.ProjectConfig{
@@ -26,6 +26,8 @@ func InitZenDoc() error {
 		DocConfig: config.DocConfig{
 			IncludePrivate: false,
 			IncludeTests:   false,
+			IncludeMain:    false,
+			ExcludeFiles:   []string{},
 		},
 	}
 
