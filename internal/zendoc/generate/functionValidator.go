@@ -7,6 +7,7 @@ import "unicode"
 @param name string - The name of the function to check
 @return bool - true if the function is private, false otherwise
 @example IsPrivateFunction("myFunc") => true
+@author Dorian TERBAH
 */
 
 func IsPrivateFunction(name string) bool {

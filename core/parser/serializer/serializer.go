@@ -13,6 +13,7 @@ import (
 @param doc doc.ProjectDoc - The project documentation to serialize
 @return (string, error) - The resulting JSON string and an error if serialization fails
 @example SerializeToJSON(myDoc)
+@author Dorian TERBAH
 */
 func SerializeToJSON(doc doc.ProjectDoc) (string, error) {
 	var buf bytes.Buffer

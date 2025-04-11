@@ -24,6 +24,7 @@ type DocParserFunctionValidator = func(string) bool
 @description Struct responsible for orchestrating validation logic when parsing documentation from Go source files. It holds a list of validators for files and functions to modularize and organize parsing rules and behaviors.
 @field FileValidators []DocParserFileValidator - A list of validators applied at the file level (e.g. checking file-level tags, imports, etc.)
 @field FunctionValidators []DocParserFunctionValidator - A list of validators specifically designed to validate function-level documentation (e.g. param/return tag parsing, required fields, etc.)
+@author Dorian TERBAH
 */
 type DocParser struct {
 	FileValidators     []DocParserFileValidator
@@ -34,6 +35,7 @@ type DocParser struct {
 @description Check if a file is valid for documentation generation using the provided file validators
 @param filepath string - The file path to validate
 @return bool - true if the file is valid, false otherwise
+@author Dorian TERBAH
 */
 func (docParser DocParser) isValidateFileForDoc(filepath string) bool {
 	for _, validator := range docParser.FileValidators {
@@ -49,6 +51,7 @@ func (docParser DocParser) isValidateFileForDoc(filepath string) bool {
 @description Check if a function name is valid for documentation generation using the provided function validators
 @param name string - The function name to validate
 @return bool - true if the function is valid, false otherwise
+@author Dorian TERBAH
 */
 func (docParser DocParser) isValidateFunction(name string) bool {
 	for _, validator := range docParser.FunctionValidators {
@@ -66,6 +69,7 @@ func (docParser DocParser) isValidateFunction(name string) bool {
 @param currentPath string - The relative path used for output (maintains relative structure)
 @return *doc.ProjectDoc, error - The parsed project documentation and an error if something went wrong
 @example ParseDocForDir("./myproject", "")
+@author Dorian TERBAH
 */
 func (docParser DocParser) ParseDocForDir(dirPath string, currentPath string) (*doc.ProjectDoc, error) {
 	entries, err := os.ReadDir(dirPath)
@@ -338,6 +342,7 @@ func (docParser DocParser) ParseDocForFunction(function *ast.FuncDecl) *doc.Func
 @description Sanitize and flatten comment lines (block or single-line) to a slice of clean strings
 @param doc *ast.CommentGroup - The group of AST comments to sanitize
 @return []string - The cleaned lines
+@author Dorian TERBAH
 */
 func sanitizeLines(doc *ast.CommentGroup) []string {
 	lines := []string{}

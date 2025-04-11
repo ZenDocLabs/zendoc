@@ -9,6 +9,7 @@ import (
 @param filePath string - The path of the file to check
 @return bool - true if the file is a test file, false otherwise
 @example IsTestFile("example_test.go") => true
+@author Dorian TERBAH
 */
 
 func IsTestFile(filePath string) bool {
@@ -20,6 +21,7 @@ func IsTestFile(filePath string) bool {
 @param filepath string - The path of the file to check
 @return bool - true if the file is a main file, false otherwise
 @example IsMainFile("main.go") => true
+@author Dorian TERBAH
 */
 
 func IsMainFile(filepath string) bool {

@@ -13,6 +13,7 @@ type ProjectConfig struct {
 	Description string `json:"description"`
 	Version     string `json:"version"`
 	GitLink     string `json:"gitLink"`
+	MainBranch  string `json:"mainBranch"`
 }
 
 type DocConfig struct {
@@ -31,6 +32,7 @@ type Config struct {
 @description Load the ZenDoc configuration from the configuration file
 @return (*Config, error) - A pointer to the loaded configuration and an error if loading fails
 @example GetConfiguration() => &Config{...}, nil
+@author Dorian TERBAH
 */
 func GetConfiguration() (*Config, error) {
 	config := Config{}
@@ -54,6 +56,7 @@ func GetConfiguration() (*Config, error) {
 @param config Config - The configuration to save
 @return error - An error if the saving process fails, otherwise nil
 @example SaveConfiguration(myConfig)
+@author Dorian TERBAH
 */
 
 func SaveConfiguration(config Config) error {
