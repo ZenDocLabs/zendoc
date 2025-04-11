@@ -12,10 +12,6 @@
 # Go workspace file
 go.work
 
-# Go module file
-go.mod
-go.sum
-
 # IDE and editor files
 .idea/
 .vscode/
