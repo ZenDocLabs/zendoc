@@ -8,6 +8,8 @@ Zendoc is a powerful documentation generator specifically designed for Golang pr
 
 Zendoc simplifies the process of creating, maintaining, and sharing documentation for your Go codebase. By parsing specially formatted comments in your code, Zendoc automatically generates structured documentation that remains in sync with your project.
 
+[Here](https://zendoc.netlify.app/) is an example of the generated web-app for this project.
+
 ## Key Features
 
 - **Go-Specific Documentation**: Tailored specifically for Golang projects
