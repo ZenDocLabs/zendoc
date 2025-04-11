@@ -188,6 +188,16 @@ func (docParser DocParser) ParseDocForFile(filePath string) (string, *doc.FileDo
 						}
 					}
 				}
+
+				if iface, ok := typeSpec.Type.(*ast.InterfaceType); ok {
+					if genDecl.Doc != nil {
+						id := docParser.ParseDocForInterface(genDecl.Doc, typeSpec.Name.Name, iface)
+						if id != nil {
+							docs = append(docs, *id)
+						}
+					}
+					continue
+				}
 			}
 		}
 
@@ -197,6 +207,73 @@ func (docParser DocParser) ParseDocForFile(filePath string) (string, *doc.FileDo
 		Docs:     docs,
 		FileName: filepath.Base(filePath),
 	}
+}
+
+func (docParser DocParser) ParseDocForInterface(comments *ast.CommentGroup, name string, iface *ast.InterfaceType) *doc.InterfaceDoc {
+	descriptionRegex := regexp.MustCompile(`@description\s*(.*)`)
+	authorRegex := regexp.MustCompile(`@author\s*(.*)`)
+	deprecatedRegex := regexp.MustCompile(`@deprecated\s*(.*)`)
+
+	lines := sanitizeLines(comments)
+	if len(lines) == 0 && len(iface.Methods.List) == 0 {
+		return nil
+	}
+
+	id := &doc.InterfaceDoc{
+		BaseDoc: doc.BaseDoc{
+			Name: name,
+			Type: "interface",
+		},
+		Methods: []doc.FuncDoc{},
+	}
+
+	for _, line := range lines {
+		switch {
+		case strings.HasPrefix(line, "@description"):
+			if matches := descriptionRegex.FindStringSubmatch(line); len(matches) == 2 {
+				id.Description = matches[1]
+			}
+		case strings.HasPrefix(line, "@author"):
+			if matches := authorRegex.FindStringSubmatch(line); len(matches) == 2 {
+				id.Author = matches[1]
+			}
+		case strings.HasPrefix(line, "@deprecated"):
+			if matches := deprecatedRegex.FindStringSubmatch(line); len(matches) == 2 {
+				id.Deprecated = matches[1]
+			}
+		}
+	}
+
+	for _, method := range iface.Methods.List {
+		for _, methodName := range method.Names {
+			funcDoc := docParser.ParseDocForInterfaceMethod(method.Doc, methodName.Name)
+			if funcDoc != nil {
+				id.Methods = append(id.Methods, *funcDoc)
+			}
+		}
+	}
+
+	// Skip if empty
+	if id.Description == "" && id.Author == "" && id.Deprecated == "" && len(id.Methods) == 0 {
+		return nil
+	}
+
+	return id
+}
+
+func (docParser DocParser) ParseDocForInterfaceMethod(docGroup *ast.CommentGroup, name string) *doc.FuncDoc {
+	if docGroup == nil {
+		return nil
+	}
+
+	fd := docParser.ParseDocForFunction(&ast.FuncDecl{
+		Name: &ast.Ident{Name: name},
+		Doc:  docGroup,
+	})
+	if fd != nil {
+		fd.Type = "interface-method"
+	}
+	return fd
 }
 
 /*

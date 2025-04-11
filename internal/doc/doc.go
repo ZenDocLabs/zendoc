@@ -68,6 +68,11 @@ type StructDoc struct {
 	Fields []StructField `json:"fields"`
 }
 
+type InterfaceDoc struct {
+	BaseDoc
+	Methods []FuncDoc `json:"methods,omitempty"`
+}
+
 /*
 @description Struct to represent the documentation of a Go file in a package
 @author Dorian TERBAH

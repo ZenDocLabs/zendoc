@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 
+	"slices"
+
 	"github.com/dterbah/zendoc/internal/export/helper"
 )
 
@@ -39,11 +41,8 @@ func UpdateAppConfig(appPath, currentVersion, description string) error {
 	}
 
 	updateVersion := true
-	for _, v := range config.Versions {
-		if v == currentVersion {
-			updateVersion = true
-			break
-		}
+	if slices.Contains(config.Versions, currentVersion) {
+		updateVersion = false
 	}
 
 	if updateVersion {
