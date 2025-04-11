@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 
-	"github.com/dterbah/zendoc/core/export/helper"
-	"github.com/dterbah/zendoc/core/export/version"
 	"github.com/dterbah/zendoc/internal/doc"
+	"github.com/dterbah/zendoc/internal/export/helper"
+	"github.com/dterbah/zendoc/internal/export/version"
+	"github.com/dterbah/zendoc/internal/system"
 	"github.com/fatih/color"
 )
 
@@ -27,6 +27,8 @@ type WebExporter struct {
 	MainBranch string
 	DocPath    string
 	Version    string
+	FileSystem system.FileSystem
+	CmdRunner  system.CommandRunner
 }
 
 /*
@@ -83,7 +85,7 @@ func (webExport WebExporter) updateVersionFile(docPath string) error {
 // writeDocumentationFile saves the doc content as a JSON file
 func (webExport WebExporter) writeDocumentationFile(docPath string, content []byte) error {
 	docFile := filepath.Join(docPath, "src", "assets", fmt.Sprintf("doc-%s.json", webExport.Version))
-	if err := os.WriteFile(docFile, content, 0644); err != nil {
+	if err := webExport.FileSystem.WriteFile(docFile, content, 0644); err != nil {
 		return fmt.Errorf("error when saving your project documentation: %w", err)
 	}
 	return nil
@@ -91,28 +93,24 @@ func (webExport WebExporter) writeDocumentationFile(docPath string, content []by
 
 // installWebTemplate clones the template repo and installs its dependencies
 func (webExport WebExporter) installWebTemplate(docPath string, appName string) error {
-	err := os.MkdirAll(docPath, os.ModePerm)
+	err := webExport.FileSystem.MkdirAll(docPath, os.ModePerm)
 	if err != nil {
 		return err
 	}
 
-	gitCommand := exec.Command("git", "clone", TEMPLATE_GIT_LINK)
-	gitCommand.Dir = docPath
+	_, err = webExport.CmdRunner.Execute(docPath, "git", "clone", TEMPLATE_GIT_LINK)
 
-	_, err = gitCommand.Output()
 	if err != nil {
 		return err
 	}
 
-	err = os.Rename(filepath.Join(docPath, "zendoc-ui-template"), filepath.Join(docPath, appName))
+	err = webExport.FileSystem.Rename(filepath.Join(docPath, "zendoc-ui-template"), filepath.Join(docPath, appName))
 	if err != nil {
 		return err
 	}
 
-	npmInstallCommand := exec.Command("npm", "i")
-	npmInstallCommand.Dir = filepath.Join(docPath, appName)
+	_, err = webExport.CmdRunner.Execute(filepath.Join(docPath, appName), "npm", "i")
 
-	_, err = npmInstallCommand.Output()
 	if err != nil {
 		return err
 	}

@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/dterbah/zendoc/internal"
-	"github.com/dterbah/zendoc/internal/zendoc/generate"
+	"github.com/dterbah/zendoc/internal/doc/generate"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )

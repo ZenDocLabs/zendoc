@@ -3,8 +3,8 @@ package export
 import (
 	"os"
 
-	"github.com/dterbah/zendoc/core/parser/serializer"
 	"github.com/dterbah/zendoc/internal/doc"
+	"github.com/dterbah/zendoc/internal/parser/serializer"
 )
 
 /*

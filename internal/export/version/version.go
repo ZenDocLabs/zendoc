@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"os"
 
-	"github.com/dterbah/zendoc/core/export/helper"
+	"github.com/dterbah/zendoc/internal/export/helper"
 )
 
 type Versions struct {

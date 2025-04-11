@@ -6,9 +6,10 @@ import (
 	"regexp"
 
 	"github.com/dterbah/zendoc/config"
-	"github.com/dterbah/zendoc/core/export"
-	"github.com/dterbah/zendoc/core/parser"
 	"github.com/dterbah/zendoc/internal"
+	"github.com/dterbah/zendoc/internal/export"
+	"github.com/dterbah/zendoc/internal/parser"
+	"github.com/dterbah/zendoc/internal/system"
 	"github.com/fatih/color"
 )
 
@@ -69,6 +70,8 @@ func GenerateDoc(outputFormat string) error {
 			MainBranch: projectConfig.ProjectConfig.MainBranch,
 			DocPath:    projectConfig.ProjectConfig.DocPath,
 			Version:    projectConfig.ProjectConfig.Version,
+			FileSystem: system.OSFileSystem{},
+			CmdRunner:  system.OSCommandRunner{},
 		}
 	}
 

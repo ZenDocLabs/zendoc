@@ -1,4 +1,4 @@
-package zendoc
+package doc
 
 import (
 	"fmt"
