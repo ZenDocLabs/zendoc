@@ -34,3 +34,5 @@ doc.json
 coverage.html
 
 doc/*
+
+coverage*

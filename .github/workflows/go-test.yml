@@ -25,10 +25,9 @@ jobs:
         run: go mod tidy
 
       - name: Run tests
-        run: go test -coverprofile=coverage.txt
+        run: go test ./... -coverprofile=coverage.txt -covermode=atomic
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          slug: ZenDocLabs/zendoc
