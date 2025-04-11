@@ -70,6 +70,7 @@ func TestUpdateAppConfig_DuplicateVersion(t *testing.T) {
 	var config app.AppConfig
 	_ = json.Unmarshal(newData, &config)
 
-	assert.Equal(t, 2, len(config.Versions))
+	assert.Equal(t, 1, len(config.Versions))
+	assert.Contains(t, config.Versions, "v1.0.0")
 	assert.Equal(t, "Initial release", config.Description)
 }
