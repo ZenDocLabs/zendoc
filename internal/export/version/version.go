@@ -2,6 +2,7 @@ package version
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 
 	"github.com/dterbah/zendoc/internal/export/helper"
@@ -21,8 +22,12 @@ func UpdateVersions(versionPath string, currentVersion string) error {
 	}
 
 	data, err := os.ReadFile(versionPath)
+	fmt.Println("ici", data, err)
 	if err != nil {
-		return err
+		if os.IsNotExist(err) {
+			return fmt.Errorf("version file does not exist: %w", err)
+		}
+		return fmt.Errorf("error reading version file: %w", err)
 	}
 
 	var versions Versions

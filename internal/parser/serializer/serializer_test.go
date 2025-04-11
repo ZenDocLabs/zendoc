@@ -12,14 +12,21 @@ func TestSerializeToJSON_Success(t *testing.T) {
 		PackageDocs: map[string][]doc.FileDoc{
 			"main": {
 				{
-					Docs: []doc.FuncDoc{
-						{
-							Name:        "MyFunction",
-							Description: "Does something",
+					FileName: "main.go",
+					Path:     "./main.go",
+					Docs: []any{
+						doc.FuncDoc{
+							BaseDoc: doc.BaseDoc{
+								Name:        "MyFunction",
+								Description: "Does something",
+								Author:      "Dorian TERBAH",
+								Type:        "function",
+							},
 							Params: []doc.Param{
 								{Name: "param1", Type: "string", Description: "First parameter"},
 							},
-							Return: &doc.Return{Type: "int", Description: "Return value"},
+							Return:  &doc.Return{Type: "int", Description: "Return value"},
+							Example: "MyFunction(\"hello\")",
 						},
 					},
 				},
