@@ -58,6 +58,10 @@ func (webExport WebExporter) Export(projectDoc doc.ProjectDoc) error {
 		return err
 	}
 
+	if err := webExport.writeEnvFile(docPath, webExport.GitLink, webExport.AppName, webExport.MainBranch); err != nil {
+		return err
+	}
+
 	color.Green("Documentation v%s saved!", webExport.Version)
 	return nil
 }
@@ -86,6 +90,16 @@ func (webExport WebExporter) updateVersionFile(docPath string) error {
 func (webExport WebExporter) writeDocumentationFile(docPath string, content []byte) error {
 	docFile := filepath.Join(docPath, "src", "assets", fmt.Sprintf("doc-%s.json", webExport.Version))
 	if err := webExport.FileSystem.WriteFile(docFile, content, 0644); err != nil {
+		return fmt.Errorf("error when saving your project documentation: %w", err)
+	}
+	return nil
+}
+
+func (webExport WebExporter) writeEnvFile(docPath, gitLink, appName, mainBranch string) error {
+	envFile := filepath.Join(docPath, ".env")
+	fileContent := fmt.Sprintf("VITE_GIT_LINK=%s\nVITE_APP_NAME=%s\nVITE_MAIN_BRANCH=%s", gitLink, appName, mainBranch)
+
+	if err := webExport.FileSystem.WriteFile(envFile, []byte(fileContent), 0644); err != nil {
 		return fmt.Errorf("error when saving your project documentation: %w", err)
 	}
 	return nil

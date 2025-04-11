@@ -22,7 +22,6 @@ func UpdateVersions(versionPath string, currentVersion string) error {
 	}
 
 	data, err := os.ReadFile(versionPath)
-	fmt.Println("ici", data, err)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return fmt.Errorf("version file does not exist: %w", err)
