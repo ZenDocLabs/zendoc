@@ -65,13 +65,14 @@ func GenerateDoc(outputFormat string) error {
 		docExporter = export.JSONExporter{}
 	} else {
 		docExporter = export.WebExporter{
-			GitLink:    projectConfig.ProjectConfig.GitLink,
-			AppName:    projectConfig.ProjectConfig.Name,
-			MainBranch: projectConfig.ProjectConfig.MainBranch,
-			DocPath:    projectConfig.ProjectConfig.DocPath,
-			Version:    projectConfig.ProjectConfig.Version,
-			FileSystem: system.OSFileSystem{},
-			CmdRunner:  system.OSCommandRunner{},
+			GitLink:     projectConfig.ProjectConfig.GitLink,
+			AppName:     projectConfig.ProjectConfig.Name,
+			MainBranch:  projectConfig.ProjectConfig.MainBranch,
+			DocPath:     projectConfig.ProjectConfig.DocPath,
+			Version:     projectConfig.ProjectConfig.Version,
+			Description: projectConfig.ProjectConfig.Description,
+			FileSystem:  system.OSFileSystem{},
+			CmdRunner:   system.OSCommandRunner{},
 		}
 	}
 

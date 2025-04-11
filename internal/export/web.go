@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 
 	"github.com/dterbah/zendoc/internal/doc"
+	"github.com/dterbah/zendoc/internal/export/app"
 	"github.com/dterbah/zendoc/internal/export/helper"
-	"github.com/dterbah/zendoc/internal/export/version"
 	"github.com/dterbah/zendoc/internal/system"
 	"github.com/fatih/color"
 )
@@ -22,13 +22,14 @@ const TEMPLATE_GIT_LINK = "https://github.com/ZenDocLabs/zendoc-ui-template"
 */
 type WebExporter struct {
 	DocExporter
-	GitLink    string
-	AppName    string
-	MainBranch string
-	DocPath    string
-	Version    string
-	FileSystem system.FileSystem
-	CmdRunner  system.CommandRunner
+	GitLink     string
+	AppName     string
+	MainBranch  string
+	DocPath     string
+	Version     string
+	Description string
+	FileSystem  system.FileSystem
+	CmdRunner   system.CommandRunner
 }
 
 /*
@@ -50,9 +51,11 @@ func (webExport WebExporter) Export(projectDoc doc.ProjectDoc) error {
 		return err
 	}
 
-	if err := webExport.updateVersionFile(docPath); err != nil {
+	if err := webExport.updateAppConfig(docPath, webExport.Version, webExport.Description); err != nil {
 		return err
 	}
+
+	color.Green("App config file updated !")
 
 	if err := webExport.writeDocumentationFile(docPath, b); err != nil {
 		return err
@@ -61,6 +64,8 @@ func (webExport WebExporter) Export(projectDoc doc.ProjectDoc) error {
 	if err := webExport.writeEnvFile(docPath, webExport.GitLink, webExport.AppName, webExport.MainBranch); err != nil {
 		return err
 	}
+
+	color.Green("Env file updated !")
 
 	color.Green("Documentation v%s saved!", webExport.Version)
 	return nil
@@ -76,10 +81,9 @@ func (webExport WebExporter) ensureTemplate(docPath string) error {
 	return webExport.installWebTemplate(filepath.Dir(docPath), webExport.AppName)
 }
 
-// updateVersionFile updates the version.json file with the current version
-func (webExport WebExporter) updateVersionFile(docPath string) error {
-	versionPath := filepath.Join(docPath, "src", "assets", "versions.json")
-	if err := version.UpdateVersions(versionPath, webExport.Version); err != nil {
+func (webExport WebExporter) updateAppConfig(docPath, version, description string) error {
+	appPath := filepath.Join(docPath, "src", "assets", "app.json")
+	if err := app.UpdateAppConfig(appPath, version, description); err != nil {
 		return fmt.Errorf("error when updating the versions of your documentation: %w", err)
 	}
 	color.Green("Version file updated!")
