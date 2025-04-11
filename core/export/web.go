@@ -34,52 +34,63 @@ type WebExporter struct {
 @param projectDoc doc.ProjectDoc - The documentation to export
 @return error - An error if the export fails
 @example WebExporter{}.Export(projectDoc)
-@author Dorian TERBAH
 */
 func (webExport WebExporter) Export(projectDoc doc.ProjectDoc) error {
 	b, err := json.Marshal(projectDoc)
 	if err != nil {
-		return fmt.Errorf("error when exporting the documentation in JSON")
+		return fmt.Errorf("error when exporting the documentation in JSON: %w", err)
 	}
-
-	// jsonDoc := string(b)
 
 	currentPath, _ := os.Getwd()
 	docPath := filepath.Join(currentPath, webExport.DocPath, webExport.AppName)
 
-	if !helper.IsFileExist(docPath) {
-		color.HiYellow("No documentation found, installing template ...")
-		// need to clone the repo
-		err := webExport.installWebTemplate(filepath.Join(currentPath, webExport.DocPath), webExport.AppName)
-		if err != nil {
-			return fmt.Errorf("error when installing the web template %s", err)
-		}
+	if err := webExport.ensureTemplate(docPath); err != nil {
+		return err
 	}
 
-	// find the existing versions of the doc
-	versionPath := filepath.Join(docPath, "src", "assets", "versions.json")
-	err = version.UpdateVersions(versionPath, webExport.Version)
-	if err != nil {
-		return fmt.Errorf("error when updating the versions of your documentation : %s", err)
+	if err := webExport.updateVersionFile(docPath); err != nil {
+		return err
 	}
 
-	color.Green("Version file updated !")
-
-	// finally, add the doc in the corresponding file
-	documentationPath := filepath.Join(docPath, "src", "assets", fmt.Sprintf("doc-%s.json", webExport.Version))
-	err = os.WriteFile(documentationPath, b, 0644)
-
-	if err != nil {
-		return fmt.Errorf("error when saving your project documentation : %s", err)
+	if err := webExport.writeDocumentationFile(docPath, b); err != nil {
+		return err
 	}
 
-	color.Green("Documentation v%s saved !", webExport.Version)
-
+	color.Green("Documentation v%s saved!", webExport.Version)
 	return nil
 }
 
+// ensureTemplate checks if the template exists, and installs it if not
+func (webExport WebExporter) ensureTemplate(docPath string) error {
+	if helper.IsFileExist(docPath) {
+		return nil
+	}
+
+	color.HiYellow("No documentation found, installing template ...")
+	return webExport.installWebTemplate(filepath.Dir(docPath), webExport.AppName)
+}
+
+// updateVersionFile updates the version.json file with the current version
+func (webExport WebExporter) updateVersionFile(docPath string) error {
+	versionPath := filepath.Join(docPath, "src", "assets", "versions.json")
+	if err := version.UpdateVersions(versionPath, webExport.Version); err != nil {
+		return fmt.Errorf("error when updating the versions of your documentation: %w", err)
+	}
+	color.Green("Version file updated!")
+	return nil
+}
+
+// writeDocumentationFile saves the doc content as a JSON file
+func (webExport WebExporter) writeDocumentationFile(docPath string, content []byte) error {
+	docFile := filepath.Join(docPath, "src", "assets", fmt.Sprintf("doc-%s.json", webExport.Version))
+	if err := os.WriteFile(docFile, content, 0644); err != nil {
+		return fmt.Errorf("error when saving your project documentation: %w", err)
+	}
+	return nil
+}
+
+// installWebTemplate clones the template repo and installs its dependencies
 func (webExport WebExporter) installWebTemplate(docPath string, appName string) error {
-	// create the dir
 	err := os.MkdirAll(docPath, os.ModePerm)
 	if err != nil {
 		return err
@@ -93,13 +104,11 @@ func (webExport WebExporter) installWebTemplate(docPath string, appName string) 
 		return err
 	}
 
-	// rename the cloned repo
 	err = os.Rename(filepath.Join(docPath, "zendoc-ui-template"), filepath.Join(docPath, appName))
 	if err != nil {
 		return err
 	}
 
-	// install packages inside
 	npmInstallCommand := exec.Command("npm", "i")
 	npmInstallCommand.Dir = filepath.Join(docPath, appName)
 
