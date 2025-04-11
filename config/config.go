@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+
+	"github.com/dterbah/zendoc/internal/system"
 )
 
 const ZENDOC_CONFIG_FILE = ".zendoc.config.json"
@@ -60,13 +62,13 @@ func GetConfiguration() (*Config, error) {
 @author Dorian TERBAH
 */
 
-func SaveConfiguration(config Config) error {
+func SaveConfiguration(config Config, fs system.FileSystem) error {
 	content, err := json.MarshalIndent(config, "", "  ")
 	if err != nil {
 		return err
 	}
 
-	err = os.WriteFile(ZENDOC_CONFIG_FILE, content, 0644)
+	err = fs.WriteFile(ZENDOC_CONFIG_FILE, content, 0644)
 
 	if err != nil {
 		return fmt.Errorf("error when saving the config of ZenDoc %s", err)

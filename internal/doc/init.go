@@ -1,17 +1,16 @@
 package doc
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 
 	"github.com/dterbah/zendoc/config"
+	"github.com/dterbah/zendoc/internal/system"
 )
 
 func InitZenDoc() error {
 	cwd, err := os.Getwd()
 	if err != nil {
-		fmt.Println("Erreur:", err)
 		return err
 	}
 
@@ -32,5 +31,5 @@ func InitZenDoc() error {
 		},
 	}
 
-	return config.SaveConfiguration(defaultConfiguration)
+	return config.SaveConfiguration(defaultConfiguration, system.OSFileSystem{})
 }
