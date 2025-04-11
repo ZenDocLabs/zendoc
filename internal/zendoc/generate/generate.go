@@ -63,7 +63,13 @@ func GenerateDoc(outputFormat string) error {
 	if outputFormat == internal.JSON_EXPORT_TYPE {
 		docExporter = export.JSONExporter{}
 	} else {
-		docExporter = export.WebExporter{}
+		docExporter = export.WebExporter{
+			GitLink:    projectConfig.ProjectConfig.GitLink,
+			AppName:    projectConfig.ProjectConfig.Name,
+			MainBranch: projectConfig.ProjectConfig.MainBranch,
+			DocPath:    projectConfig.ProjectConfig.DocPath,
+			Version:    projectConfig.ProjectConfig.Version,
+		}
 	}
 
 	cwd, err := os.Getwd()

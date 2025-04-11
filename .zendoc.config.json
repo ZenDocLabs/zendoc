@@ -2,8 +2,10 @@
   "projectConfig": {
     "name": "zendoc",
     "description": "Description of your project",
-    "version": "1.0",
-    "gitLink": ""
+    "version": "1.1",
+    "gitLink": "",
+    "mainBranch": "",
+    "docPath": "./doc"
   },
   "docConfig": {
     "includePrivate": false,

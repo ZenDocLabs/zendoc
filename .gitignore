@@ -36,3 +36,5 @@ coverage.out
 bin/
 doc.json
 coverage.html
+
+doc/*

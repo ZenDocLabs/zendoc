@@ -14,6 +14,7 @@ type ProjectConfig struct {
 	Version     string `json:"version"`
 	GitLink     string `json:"gitLink"`
 	MainBranch  string `json:"mainBranch"`
+	DocPath     string `json:"docPath"`
 }
 
 type DocConfig struct {
