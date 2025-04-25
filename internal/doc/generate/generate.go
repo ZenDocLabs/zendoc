@@ -3,6 +3,7 @@ package generate
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
 
 	"github.com/dterbah/zendoc/config"
@@ -50,10 +51,11 @@ func wrapRegexFileValidator(regex []string) parser.DocParserFileValidator {
 /*
 @description Generate the documentation in a JSON format, or in a web app
 @param outputFormat string - Either "json" or "web"
+@param watch bool - Value used to watch the project modifications
 @author Dorian TERBAH
 @return error - An error if the generation has failed
 */
-func GenerateDoc(outputFormat string) error {
+func GenerateDoc(outputFormat string, watch bool) error {
 	var docExporter export.DocExporter
 
 	projectConfig, err := config.GetConfiguration()
@@ -85,6 +87,15 @@ func GenerateDoc(outputFormat string) error {
 		FileValidators:     createFilevalidators(*projectConfig),
 		FunctionValidators: createFunctionsValidators(*projectConfig),
 	}
+
+	if watch {
+		docPath := filepath.Join(cwd, projectConfig.ProjectConfig.DocPath)
+		watcher := export.FileWatcher{
+			Exporter: docExporter,
+		}
+		return watcher.WatchDir(docParser, cwd, docPath)
+	}
+
 	projectDoc, err := docParser.ParseDocForDir(cwd, "")
 	if err != nil {
 		color.Red("error when parse your project %s", err)

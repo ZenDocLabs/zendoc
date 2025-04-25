@@ -9,6 +9,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var watch bool
+
 var generateZenDoc = &cobra.Command{
 	Use:   "generate [output]",
 	Short: "Generate doc for the current go project",
@@ -30,7 +32,7 @@ var generateZenDoc = &cobra.Command{
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		outputFormat := args[0]
-		err := generate.GenerateDoc(outputFormat)
+		err := generate.GenerateDoc(outputFormat, watch)
 
 		if err != nil {
 			color.Red("error when generating doc %s", err)
@@ -42,5 +44,6 @@ var generateZenDoc = &cobra.Command{
 }
 
 func init() {
+	generateZenDoc.Flags().BoolVarP(&watch, "watch", "w", false, "Watch for file changes and regenerate doc")
 	rootCmd.AddCommand(generateZenDoc)
 }
